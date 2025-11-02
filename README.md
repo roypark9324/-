@@ -88,6 +88,68 @@ npm run build
 npm start
 ```
 
+## 🌐 웹에 배포하기 (Vercel)
+
+웹 브라우저에서 주소를 입력해 접속할 수 있도록 배포하는 방법입니다.
+
+### 1. Vercel 계정 만들기
+
+1. [Vercel](https://vercel.com)에 접속
+2. GitHub 계정으로 로그인
+
+### 2. Vercel Postgres 데이터베이스 생성
+
+1. Vercel 대시보드에서 **Storage** 탭 클릭
+2. **Create Database** 버튼 클릭
+3. **Postgres** 선택
+4. 데이터베이스 이름 입력 (예: `vocabulary-db`)
+5. 리전 선택 (가장 가까운 지역 선택)
+6. **Create** 클릭
+
+### 3. GitHub 저장소 배포
+
+1. Vercel 대시보드에서 **Add New...** → **Project** 클릭
+2. GitHub 저장소 선택 (`roypark9324/-`)
+3. 브랜치 선택: `claude/english-vocabulary-learning-app-011CUiC9EZStWWqyCzbKumnD`
+4. **Environment Variables** 섹션에서 환경 변수 추가:
+   - `OPENAI_API_KEY`: 여러분의 OpenAI API 키 입력
+5. **Deploy** 버튼 클릭
+
+### 4. 데이터베이스 연결
+
+배포가 완료되면:
+
+1. Vercel 프로젝트 설정에서 **Storage** 탭으로 이동
+2. 생성한 Postgres 데이터베이스를 프로젝트에 연결
+3. 환경 변수가 자동으로 추가됨 (`DATABASE_URL` 등)
+
+### 5. 데이터베이스 마이그레이션
+
+Vercel 프로젝트 설정에서:
+
+1. **Settings** → **General** → **Build & Development Settings**
+2. **Build Command**를 다음과 같이 설정:
+   ```
+   prisma generate && prisma migrate deploy && next build
+   ```
+3. 저장 후 프로젝트 재배포 (Deployments → ... → Redeploy)
+
+### 6. 접속 가능한 URL 확인
+
+배포가 완료되면 다음과 같은 URL이 생성됩니다:
+
+```
+https://your-project-name.vercel.app
+```
+
+이제 이 주소를 웹 브라우저에 입력하면 어디서든 앱에 접속할 수 있습니다! 🎉
+
+### 커스텀 도메인 설정 (선택사항)
+
+1. Vercel 프로젝트 설정 → **Domains**
+2. 원하는 도메인 추가 (예: `vocabulary.yourdomain.com`)
+3. DNS 설정 안내에 따라 도메인 연결
+
 ## 프로젝트 구조
 
 ```
