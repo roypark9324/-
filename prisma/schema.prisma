@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Word {
+  id              String       @id @default(uuid())
+  word            String       @unique
+  koreanMeaning   String       // 한글 뜻
+  englishMeaning  String       // 영영풀이
+  exampleSentence String       // 예문
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  folders         WordFolder[]
+  testResults     TestResult[]
+}
+
+model Folder {
+  id        String       @id @default(uuid())
+  name      String       @unique
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  words     WordFolder[]
+}
+
+model WordFolder {
+  id       String @id @default(uuid())
+  word     Word   @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  wordId   String
+  folder   Folder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  folderId String
+
+  @@unique([wordId, folderId])
+}
+
+model TestResult {
+  id        String   @id @default(uuid())
+  word      Word     @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  wordId    String
+  testType  String   // "fill_blank", "word_match", etc.
+  isCorrect Boolean
+  createdAt DateTime @default(now())
+}
