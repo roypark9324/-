@@ -4,9 +4,9 @@
 
 ## 주요 기능
 
-### 1. 단어 검색 및 자동 생성
-- 영어 단어를 입력하면 자동으로 한글 뜻, 영영풀이, 예문을 생성합니다
-- 생성된 단어 정보를 단어장에 저장할 수 있습니다
+### 1. 단어 검색 및 자동 생성 (AI 기반) ✨
+- 영어 단어를 입력하면 OpenAI GPT-4o-mini를 사용하여 자동으로 한글 뜻, 영영풀이, 예문을 생성합니다
+- AI가 생성한 자연스럽고 정확한 단어 정보를 단어장에 저장할 수 있습니다
 
 ### 2. 사진으로 단어 추가 (OCR)
 - 이미지를 업로드하면 Tesseract.js를 사용해 텍스트를 추출합니다
@@ -29,6 +29,7 @@
 - **언어**: TypeScript
 - **스타일링**: Tailwind CSS
 - **데이터베이스**: SQLite + Prisma ORM
+- **AI**: OpenAI GPT-4o-mini
 - **OCR**: Tesseract.js
 
 ## 설치 및 실행
@@ -47,10 +48,12 @@ npm install
 cp .env.example .env
 ```
 
-필요한 경우 `.env` 파일에 OpenAI API 키를 추가합니다:
+**중요:** AI 기반 단어 생성 기능을 사용하려면 `.env` 파일에 OpenAI API 키를 추가해야 합니다:
 ```
 OPENAI_API_KEY="your-actual-api-key"
 ```
+
+OpenAI API 키는 [OpenAI Platform](https://platform.openai.com/api-keys)에서 발급받을 수 있습니다.
 
 ### 3. 데이터베이스 설정
 
@@ -132,16 +135,6 @@ npm start
 - isCorrect: 정답 여부
 
 ## 향후 개선 사항
-
-### AI API 연동
-현재는 단어 정보가 플레이스홀더로 생성됩니다. 실제 사용을 위해서는 OpenAI API 등을 연동해야 합니다.
-
-`.env` 파일에 API 키를 추가:
-```
-OPENAI_API_KEY=your-api-key-here
-```
-
-`app/api/words/generate/route.ts`에서 API 호출 로직을 구현하면 됩니다.
 
 ### 추가 기능 아이디어
 - 단어 복습 시스템 (간격 반복 학습)

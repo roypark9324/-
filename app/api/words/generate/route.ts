@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import OpenAI from "openai";
 
-// AI API를 사용하지 않고 기본 예시 데이터를 생성하는 함수
-// 실제 프로덕션에서는 OpenAI API 등을 사용할 수 있습니다
-function generateWordData(word: string) {
-  // 간단한 예시 데이터 생성
-  // TODO: 실제로는 OpenAI API나 Dictionary API를 사용해야 합니다
-  return {
-    word: word.toLowerCase(),
-    koreanMeaning: `${word}의 한글 뜻 (AI API 연동 필요)`,
-    englishMeaning: `The English definition of "${word}". (AI API integration needed)`,
-    exampleSentence: `This is an example sentence using the word "${word}". (AI API integration needed)`,
-  };
-}
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,30 +17,77 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const wordData = generateWordData(word.trim());
+    // OpenAI API 키가 설정되지 않은 경우
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        {
+          word: word.toLowerCase(),
+          koreanMeaning: "OpenAI API 키가 설정되지 않았습니다. .env 파일을 확인하세요.",
+          englishMeaning: "OpenAI API key is not configured. Please check your .env file.",
+          exampleSentence: "Please add OPENAI_API_KEY to your .env file to use this feature.",
+        }
+      );
+    }
 
-    // TODO: 여기에 OpenAI API 호출 로직을 추가할 수 있습니다
-    // 예시:
-    // const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    // const completion = await openai.chat.completions.create({
-    //   model: "gpt-4",
-    //   messages: [
-    //     {
-    //       role: "system",
-    //       content: "You are a helpful English vocabulary assistant. Provide Korean meaning, English definition, and an example sentence for the given word in JSON format."
-    //     },
-    //     {
-    //       role: "user",
-    //       content: `Word: ${word}`
-    //     }
-    //   ],
-    // });
+    // OpenAI API를 사용하여 단어 정보 생성
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: `You are a helpful English vocabulary assistant. For any given English word, provide:
+1. Korean meaning (한글 뜻)
+2. English definition (영영 풀이)
+3. Example sentence using the word
+
+Return the response in JSON format with these exact keys: koreanMeaning, englishMeaning, exampleSentence.
+Make sure the Korean meaning is accurate and natural in Korean.
+The example sentence should be practical and commonly used.`,
+        },
+        {
+          role: "user",
+          content: `Word: ${word.trim()}`,
+        },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+    });
+
+    const content = completion.choices[0].message.content;
+    if (!content) {
+      throw new Error("OpenAI API returned empty response");
+    }
+
+    const parsedData = JSON.parse(content);
+
+    const wordData = {
+      word: word.toLowerCase().trim(),
+      koreanMeaning: parsedData.koreanMeaning || parsedData.korean_meaning || "의미를 찾을 수 없습니다",
+      englishMeaning: parsedData.englishMeaning || parsedData.english_meaning || "Definition not found",
+      exampleSentence: parsedData.exampleSentence || parsedData.example_sentence || `I learned the word "${word}".`,
+    };
 
     return NextResponse.json(wordData);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Word generation error:", error);
+
+    // OpenAI API 에러 처리
+    if (error.code === 'insufficient_quota') {
+      return NextResponse.json(
+        { error: "OpenAI API 할당량이 부족합니다. API 계정을 확인해주세요." },
+        { status: 402 }
+      );
+    }
+
+    if (error.status === 401) {
+      return NextResponse.json(
+        { error: "OpenAI API 키가 유효하지 않습니다." },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json(
-      { error: "단어 생성 중 오류가 발생했습니다" },
+      { error: error.message || "단어 생성 중 오류가 발생했습니다" },
       { status: 500 }
     );
   }
