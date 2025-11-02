@@ -39,7 +39,20 @@
 npm install
 ```
 
-### 2. 데이터베이스 설정
+### 2. 환경 변수 설정
+
+`.env.example` 파일을 복사하여 `.env` 파일을 생성합니다:
+
+```bash
+cp .env.example .env
+```
+
+필요한 경우 `.env` 파일에 OpenAI API 키를 추가합니다:
+```
+OPENAI_API_KEY="your-actual-api-key"
+```
+
+### 3. 데이터베이스 설정
 
 Prisma 마이그레이션을 실행하여 데이터베이스를 생성합니다:
 
@@ -57,7 +70,7 @@ npx prisma migrate dev --name init
 PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1 npx prisma migrate dev --name init
 ```
 
-### 3. 개발 서버 실행
+### 4. 개발 서버 실행
 
 ```bash
 npm run dev
@@ -65,7 +78,7 @@ npm run dev
 
 브라우저에서 [http://localhost:3000](http://localhost:3000)을 열어 앱을 확인합니다.
 
-### 4. 프로덕션 빌드
+### 5. 프로덕션 빌드
 
 ```bash
 npm run build
